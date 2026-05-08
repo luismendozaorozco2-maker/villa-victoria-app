@@ -5,20 +5,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # Actualizado a v4
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip3 install --user --upgrade Cython==0.29.33 virtualenv
+
       - name: Set up Python
-        uses: actions/setup-python@v5  # Actualizado a v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.33
+
       - name: Build with Buildozer
         run: |
+          pip install buildozer
+          # Este comando acepta todas las licencias de Android automáticamente
           yes | buildozer android debug
+        env:
+          # Esto evita que Buildozer se detenga pidiendo interacción humana
+          BUILDOZER_ALLOW_ORG_NAME_AS_DOMAIN: 1
+
       - name: Upload APK
-        uses: actions/upload-artifact@v4  # Actualizado a v4
+        uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: villa-victoria-package
           path: bin/*.apk
